@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/11Petrov/gopherloyal/internal/config"
+	"github.com/11Petrov/gopherloyal/internal/handlers"
 	"github.com/11Petrov/gopherloyal/internal/logger"
 	"github.com/11Petrov/gopherloyal/internal/storage/postgre"
 	"github.com/go-chi/chi/v5"
@@ -27,9 +28,13 @@ func Run(cfg *config.Config, ctx context.Context) error {
 	if err != nil {
 		log.Errorf("store failed %s", err)
 	}
-	log.Infof("store init +", store)
+	userHandler := handlers.NewUsersHandler(store)
 
 	r := chi.NewRouter()
+	r.Use(logger.WithLogging)
+
+	r.Post("/api/user/register", userHandler.UserRegister)
+	r.Post("/api/user/login", userHandler.UserLogin)
 
 	log.Infof(
 		"Running server",

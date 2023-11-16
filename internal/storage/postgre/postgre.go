@@ -27,7 +27,7 @@ func NewDBStore(databaseAddress string, ctx context.Context) (*Database, error) 
 
 	// Проводим миграцию
 	log.Info("Start migrating database")
-	err = goose.Up(migrationDB, "D:/Pavel/Golang/Yandex/gopherloyal/internal/migrations")
+	err = goose.Up(migrationDB, "./internal/migrations")
 	if err != nil {
 		log.Errorf("error goose.Up: %s", err)
 		return nil, err
