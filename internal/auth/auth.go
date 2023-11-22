@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/11Petrov/gopherloyal/internal/logger"
@@ -10,7 +11,7 @@ import (
 
 type Claims struct {
 	jwt.RegisteredClaims
-	UserID string
+	UserID int
 }
 
 const (
@@ -18,7 +19,7 @@ const (
 	SecretKEY = "supersecretkey"
 )
 
-func GenerateToken(ctx context.Context, userID string) (string, error) {
+func GenerateToken(ctx context.Context, rw http.ResponseWriter, userID int) error {
 	log := logger.LoggerFromContext(ctx)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -30,26 +31,33 @@ func GenerateToken(ctx context.Context, userID string) (string, error) {
 	tokenString, err := token.SignedString([]byte(SecretKEY))
 	if err != nil {
 		log.Errorf("error tokenString in BuildJWTString()... ", err)
-		return "", err
+		return err
 	}
-	return tokenString, nil
+	http.SetCookie(rw, &http.Cookie{
+		Name:    "Token",
+		Value:   tokenString,
+		Expires: time.Now().Add(TokenEXP),
+	})
+
+	return nil
 }
 
-func GetUserID(ctx context.Context, tokenString string) (string, error) {
+func GetUserID(ctx context.Context, r *http.Request) (int, error) {
 	log := logger.LoggerFromContext(ctx)
 	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return []byte(SecretKEY), nil
-		})
+	cookie, err := r.Cookie("Token")
 	if err != nil {
 		log.Errorf("error in GetUserID, ", err)
-		return "", err
+		return 0, err
 	}
+
+	token, err := jwt.ParseWithClaims(cookie.Value, claims, func(t *jwt.Token) (interface{}, error) {
+		return []byte(SecretKEY), nil
+	})
 
 	if !token.Valid {
 		log.Errorf("no valid token ...", err)
-		return "", err
+		return 0, err
 	}
 
 	return claims.UserID, err

@@ -7,6 +7,8 @@ import (
 )
 
 type Store interface {
-	UserRegister(ctx context.Context, user *models.UserAuth) error
-	UserLogin(ctx context.Context, user *models.UserAuth) error
+	UserRegister(ctx context.Context, user *models.Users) (int, error)
+	UserLogin(ctx context.Context, user *models.Users) (*models.Users, error)
+	UploadOrder(ctx context.Context, order *models.Orders) error
+	GetUserOrders(ctx context.Context, userID int) ([]models.Orders, error)
 }

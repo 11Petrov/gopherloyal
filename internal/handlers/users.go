@@ -12,8 +12,8 @@ import (
 )
 
 type users interface {
-	UserRegister(ctx context.Context, user *models.UserAuth) error
-	UserLogin(ctx context.Context, user *models.UserAuth) error
+	UserRegister(ctx context.Context, user *models.Users) (int, error)
+	UserLogin(ctx context.Context, user *models.Users) (*models.Users, error)
 }
 
 type usersHandler struct {
@@ -29,14 +29,14 @@ func NewUsersHandler(store users) *usersHandler {
 func (u *usersHandler) UserRegister(rw http.ResponseWriter, r *http.Request) {
 	log := logger.LoggerFromContext(r.Context())
 
-	var user models.UserAuth
+	var user models.Users
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		log.Errorf("error decoding request body: %s", err)
 		http.Error(rw, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	err := u.store.UserRegister(r.Context(), &user)
+	userID, err := u.store.UserRegister(r.Context(), &user)
 	if err != nil {
 		switch err {
 		case storageErrors.ErrLoginTaken:
@@ -48,28 +48,28 @@ func (u *usersHandler) UserRegister(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateToken(r.Context(), user.Login)
+	err = auth.GenerateToken(r.Context(), rw, userID)
 	if err != nil {
 		log.Errorf("error generating token: %s", err)
 		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	rw.Header().Set("Authorization", "Bearer "+token)
+	auth.GenerateToken(r.Context(), rw, userID)
 	rw.WriteHeader(http.StatusOK)
 }
 
 func (u *usersHandler) UserLogin(rw http.ResponseWriter, r *http.Request) {
 	log := logger.LoggerFromContext(r.Context())
 
-	var user models.UserAuth
+	var user models.Users
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		log.Errorf("error decoding request body: %s", err)
 		http.Error(rw, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	err := u.store.UserLogin(r.Context(), &user)
+	loggedUser, err := u.store.UserLogin(r.Context(), &user)
 	if err != nil {
 		switch err {
 		case storageErrors.ErrUserNotFound, storageErrors.ErrInvalidPassword:
@@ -81,13 +81,12 @@ func (u *usersHandler) UserLogin(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateToken(r.Context(), user.Login)
+	err = auth.GenerateToken(r.Context(), rw, loggedUser.ID)
 	if err != nil {
 		log.Errorf("error generating token: %s", err)
 		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	rw.Header().Set("Authorization", "Bearer "+token)
 	rw.WriteHeader(http.StatusOK)
 }

@@ -29,12 +29,15 @@ func Run(cfg *config.Config, ctx context.Context) error {
 		log.Errorf("store failed %s", err)
 	}
 	userHandler := handlers.NewUsersHandler(store)
+	ordersHandler := handlers.NewOrdersHandler(store)
 
 	r := chi.NewRouter()
 	r.Use(logger.WithLogging)
 
 	r.Post("/api/user/register", userHandler.UserRegister)
 	r.Post("/api/user/login", userHandler.UserLogin)
+	r.Post("/api/user/orders", ordersHandler.UploadOrder)
+	r.Get("/api/user/orders", ordersHandler.GetUserOrders)
 
 	log.Infof(
 		"Running server",

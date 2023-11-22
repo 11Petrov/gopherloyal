@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS Orders (
     order_number VARCHAR(20) UNIQUE,
     uploaded_at TIMESTAMP,
     status VARCHAR(20),
-    accrual INT
+    accrual NUMERIC NOT NULL DEFAULT 0
 );
 
 -- +goose Down
