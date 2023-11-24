@@ -53,11 +53,16 @@ func NewConfig() *Config {
 		cfg.AccrualAddress = accrualAddressFlag
 	}
 
-	cfg.ServerAddress = strings.TrimPrefix(cfg.ServerAddress, "http://")
-	parts := strings.Split(cfg.ServerAddress, ":")
-	if len(parts) > 1 && parts[0] == "" {
-		cfg.ServerAddress = "localhost:" + parts[1]
-	}
+	cfg.ServerAddress = prepareAddress(cfg.ServerAddress)
 
 	return cfg
+}
+
+func prepareAddress(addr string) string {
+	addr = strings.TrimPrefix(addr, "http://")
+	parts := strings.Split(addr, ":")
+	if len(parts) > 1 && parts[0] == "" {
+		return "localhost:" + parts[1]
+	}
+	return addr
 }

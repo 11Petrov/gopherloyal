@@ -7,6 +7,7 @@ import (
 	"github.com/11Petrov/gopherloyal/internal/config"
 	"github.com/11Petrov/gopherloyal/internal/handlers"
 	"github.com/11Petrov/gopherloyal/internal/logger"
+	"github.com/11Petrov/gopherloyal/internal/service"
 	"github.com/11Petrov/gopherloyal/internal/storage/postgre"
 	"github.com/go-chi/chi/v5"
 )
@@ -30,6 +31,9 @@ func Run(cfg *config.Config, ctx context.Context) error {
 	}
 	userHandler := handlers.NewUsersHandler(store)
 	ordersHandler := handlers.NewOrdersHandler(store)
+	balanceHandler := handlers.NewBalanceHandler(store)
+
+	go service.ProcessOrderUpdates(ctx, cfg, store)
 
 	r := chi.NewRouter()
 	r.Use(logger.WithLogging)
@@ -38,6 +42,7 @@ func Run(cfg *config.Config, ctx context.Context) error {
 	r.Post("/api/user/login", userHandler.UserLogin)
 	r.Post("/api/user/orders", ordersHandler.UploadOrder)
 	r.Get("/api/user/orders", ordersHandler.GetUserOrders)
+	r.Get("/api/user/balance", balanceHandler.GetUserBalance)
 
 	log.Infof(
 		"Running server",
