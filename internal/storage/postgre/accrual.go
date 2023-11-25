@@ -10,7 +10,7 @@ import (
 )
 
 func (d *Database) RetrieveNewOrders(ctx context.Context) ([]models.Orders, error) {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 	var orders []models.Orders
 
 	query := `
@@ -28,7 +28,7 @@ func (d *Database) RetrieveNewOrders(ctx context.Context) ([]models.Orders, erro
 
 	for rows.Next() {
 		var order models.Orders
-		if err := rows.Scan(&order.UserID, &order.OrderNumber, &order.Status, &order.Accrual, &order.UploadedAt); err != nil {
+		if err := rows.Scan(&order.UserID, &order.Number, &order.Status, &order.Accrual, &order.UploadedAt); err != nil {
 			log.Errorf("error scanning new order: %s", err)
 			return nil, err
 		}
@@ -44,7 +44,7 @@ func (d *Database) RetrieveNewOrders(ctx context.Context) ([]models.Orders, erro
 }
 
 func (d *Database) UpdateOrderStatusAndAccrual(ctx context.Context, orderNumber string, status string, accrual float64) error {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 	conn, err := d.db.Acquire(ctx)
 	if err != nil {
 		log.Errorf("error acquiring database connection: %s", err)

@@ -11,7 +11,7 @@ import (
 )
 
 func (d *Database) UserRegister(ctx context.Context, user *models.Users) (int, error) {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 
 	// Проверяем, занят ли логин пользователя
 	var count int
@@ -44,7 +44,7 @@ func (d *Database) UserRegister(ctx context.Context, user *models.Users) (int, e
 }
 
 func (d *Database) UserLogin(ctx context.Context, user *models.Users) (*models.Users, error) {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 
 	// Проверяем учетные данные пользователя
 	var storedPasswordHash string

@@ -15,12 +15,12 @@ type Claims struct {
 }
 
 const (
-	TokenEXP  = time.Hour * 1
+	TokenEXP  = time.Hour * 3
 	SecretKEY = "supersecretkey"
 )
 
-func GenerateToken(ctx context.Context, rw http.ResponseWriter, userID int) error {
-	log := logger.LoggerFromContext(ctx)
+func WriteToken(ctx context.Context, rw http.ResponseWriter, userID int) error {
+	log := logger.FromContext(ctx)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenEXP)),
@@ -43,7 +43,7 @@ func GenerateToken(ctx context.Context, rw http.ResponseWriter, userID int) erro
 }
 
 func GetUserID(ctx context.Context, r *http.Request) (int, error) {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 	claims := &Claims{}
 	cookie, err := r.Cookie("Token")
 	if err != nil {

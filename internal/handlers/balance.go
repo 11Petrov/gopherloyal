@@ -25,7 +25,7 @@ func NewBalanceHandler(store balance) *balanceHandler {
 }
 
 func (u *balanceHandler) GetUserBalance(rw http.ResponseWriter, r *http.Request) {
-	log := logger.LoggerFromContext(r.Context())
+	log := logger.FromContext(r.Context())
 
 	userID, err := auth.GetUserID(r.Context(), r)
 	if err != nil {

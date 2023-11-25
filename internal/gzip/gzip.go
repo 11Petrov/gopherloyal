@@ -75,7 +75,7 @@ func (c *compressReader) Close() error {
 
 func GzipMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log := logger.LoggerFromContext(r.Context())
+		log := logger.FromContext(r.Context())
 		// по умолчанию устанавливаем оригинальный http.ResponseWriter как тот,
 		// который будем передавать следующей функции
 		ow := w

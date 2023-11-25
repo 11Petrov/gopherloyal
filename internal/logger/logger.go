@@ -12,7 +12,7 @@ type ctxLogger struct{}
 
 var sugar zap.SugaredLogger
 
-func NewLogger() zap.SugaredLogger {
+func New() zap.SugaredLogger {
 	logger, err := zap.NewProduction()
 	if err != nil {
 		panic(err)
@@ -26,7 +26,7 @@ func ContextWithLogger(ctx context.Context, l *zap.SugaredLogger) context.Contex
 	return context.WithValue(ctx, ctxLogger{}, l)
 }
 
-func LoggerFromContext(ctx context.Context) *zap.SugaredLogger {
+func FromContext(ctx context.Context) *zap.SugaredLogger {
 	if l, ok := ctx.Value(ctxLogger{}).(*zap.SugaredLogger); ok {
 		return l
 	}

@@ -31,7 +31,7 @@ func NewOrdersHandler(store orders) *ordersHandler {
 }
 
 func (o *ordersHandler) UploadOrder(rw http.ResponseWriter, r *http.Request) {
-	log := logger.LoggerFromContext(r.Context())
+	log := logger.FromContext(r.Context())
 
 	userID, err := auth.GetUserID(r.Context(), r)
 	if err != nil {
@@ -55,10 +55,10 @@ func (o *ordersHandler) UploadOrder(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	order := &models.Orders{
-		UserID:      userID,
-		OrderNumber: orderNumber,
-		Status:      "NEW",
-		UploadedAt:  time.Now(),
+		UserID:     userID,
+		Number:     orderNumber,
+		Status:     models.StatusNew,
+		UploadedAt: time.Now(),
 	}
 
 	err = o.store.UploadOrder(r.Context(), order)
@@ -82,7 +82,7 @@ func (o *ordersHandler) UploadOrder(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (o *ordersHandler) GetUserOrders(rw http.ResponseWriter, r *http.Request) {
-	log := logger.LoggerFromContext(r.Context())
+	log := logger.FromContext(r.Context())
 
 	userID, err := auth.GetUserID(r.Context(), r)
 	if err != nil {

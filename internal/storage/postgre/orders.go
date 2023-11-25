@@ -9,9 +9,9 @@ import (
 )
 
 func (d *Database) UploadOrder(ctx context.Context, order *models.Orders) error {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 
-	rows, err := d.db.Query(ctx, "SELECT user_id FROM Orders WHERE order_number = $1", order.OrderNumber)
+	rows, err := d.db.Query(ctx, "SELECT user_id FROM Orders WHERE order_number = $1", order.Number)
 	if err != nil {
 		log.Errorf("error executing select query: %s", err)
 		return err
@@ -31,7 +31,7 @@ func (d *Database) UploadOrder(ctx context.Context, order *models.Orders) error 
 	}
 
 	_, err = d.db.Exec(ctx, "INSERT INTO Orders (user_id, order_number, status, uploaded_at) VALUES ($1, $2, $3, $4)",
-		order.UserID, order.OrderNumber, order.Status, order.UploadedAt)
+		order.UserID, order.Number, order.Status, order.UploadedAt)
 	if err != nil {
 		log.Errorf("error uploading order: %s", err)
 		return err
@@ -40,7 +40,7 @@ func (d *Database) UploadOrder(ctx context.Context, order *models.Orders) error 
 }
 
 func (d *Database) GetUserOrders(ctx context.Context, userID int) ([]models.Orders, error) {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 
 	rows, err := d.db.Query(ctx, "SELECT order_number, uploaded_at, status, accrual FROM Orders WHERE user_id = $1 ORDER BY uploaded_at ASC", userID)
 	if err != nil {
@@ -52,7 +52,7 @@ func (d *Database) GetUserOrders(ctx context.Context, userID int) ([]models.Orde
 	var orders []models.Orders
 	for rows.Next() {
 		var order models.Orders
-		if err := rows.Scan(&order.OrderNumber, &order.UploadedAt, &order.Status, &order.Accrual); err != nil {
+		if err := rows.Scan(&order.Number, &order.UploadedAt, &order.Status, &order.Accrual); err != nil {
 			log.Errorf("error scanning order rows: %s", err)
 			return nil, err
 		}

@@ -29,7 +29,7 @@ func parseEnv() (string, string, string) {
 }
 
 // NewConfig создает новый экземпляр конфигурации приложения на основе флагов командной строки и переменных окружения
-func NewConfig() *Config {
+func New() *Config {
 	serverAddressFlag, databaseAddressFlag, accrualAddressFlag := parseFlags()
 	envServerAddress, envDatabaseAddress, envAccrualAddress := parseEnv()
 

@@ -8,7 +8,7 @@ import (
 )
 
 func (d *Database) GetUserBalance(ctx context.Context, userID int) (*models.UserBalance, error) {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 
 	var userBalance models.UserBalance
 

@@ -27,7 +27,7 @@ func NewUsersHandler(store users) *usersHandler {
 }
 
 func (u *usersHandler) UserRegister(rw http.ResponseWriter, r *http.Request) {
-	log := logger.LoggerFromContext(r.Context())
+	log := logger.FromContext(r.Context())
 
 	var user models.Users
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -48,19 +48,19 @@ func (u *usersHandler) UserRegister(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = auth.GenerateToken(r.Context(), rw, userID)
+	err = auth.WriteToken(r.Context(), rw, userID)
 	if err != nil {
 		log.Errorf("error generating token: %s", err)
 		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	auth.GenerateToken(r.Context(), rw, userID)
+	auth.WriteToken(r.Context(), rw, userID)
 	rw.WriteHeader(http.StatusOK)
 }
 
 func (u *usersHandler) UserLogin(rw http.ResponseWriter, r *http.Request) {
-	log := logger.LoggerFromContext(r.Context())
+	log := logger.FromContext(r.Context())
 
 	var user models.Users
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -81,7 +81,7 @@ func (u *usersHandler) UserLogin(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = auth.GenerateToken(r.Context(), rw, loggedUser.ID)
+	err = auth.WriteToken(r.Context(), rw, loggedUser.ID)
 	if err != nil {
 		log.Errorf("error generating token: %s", err)
 		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)

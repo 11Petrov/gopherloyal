@@ -13,8 +13,8 @@ import (
 )
 
 func main() {
-	cfg := config.NewConfig()
-	log := logger.NewLogger()
+	cfg := config.New()
+	log := logger.New()
 
 	ctx := logger.ContextWithLogger(context.Background(), &log)
 
@@ -24,7 +24,7 @@ func main() {
 }
 
 func Run(cfg *config.Config, ctx context.Context) error {
-	log := logger.LoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 	store, err := postgre.NewDBStore(cfg.DatabaseAddress, ctx)
 	if err != nil {
 		log.Errorf("store failed %s", err)
@@ -47,7 +47,6 @@ func Run(cfg *config.Config, ctx context.Context) error {
 	log.Infof(
 		"Running server",
 		"address", cfg.ServerAddress,
-		"DSN", cfg.DatabaseAddress,
 	)
 	return http.ListenAndServe(cfg.ServerAddress, r)
 }
