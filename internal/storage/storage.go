@@ -12,4 +12,6 @@ type Store interface {
 	UploadOrder(ctx context.Context, order *models.Orders) error
 	GetUserOrders(ctx context.Context, userID int) ([]models.Orders, error)
 	GetUserBalance(ctx context.Context, userID int) (*models.UserBalance, error)
+	Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error
+	GetWithdrawals(ctx context.Context, userID int) ([]models.Withdrawals, error)
 }

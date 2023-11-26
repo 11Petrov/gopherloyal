@@ -43,6 +43,8 @@ func Run(cfg *config.Config, ctx context.Context) error {
 	r.Post("/api/user/orders", ordersHandler.UploadOrder)
 	r.Get("/api/user/orders", ordersHandler.GetUserOrders)
 	r.Get("/api/user/balance", balanceHandler.GetUserBalance)
+	r.Post("/api/user/balance/withdraw", balanceHandler.Withdrawals)
+	r.Get("/api/user/withdrawals", balanceHandler.GetWithdrawals)
 
 	log.Infof(
 		"Running server",
