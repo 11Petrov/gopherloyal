@@ -16,7 +16,7 @@ func (d *Database) RetrieveNewOrders(ctx context.Context) ([]models.Orders, erro
 	query := `
         SELECT user_id, order_number, status, accrual, uploaded_at
         FROM Orders
-        WHERE status = 'NEW'
+        WHERE status NOT IN ('PROCESSED', 'INVALID')
     `
 
 	rows, err := d.db.Query(ctx, query)

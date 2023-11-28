@@ -55,7 +55,6 @@ func (u *usersHandler) UserRegister(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auth.WriteToken(r.Context(), rw, userID)
 	rw.WriteHeader(http.StatusOK)
 }
 
