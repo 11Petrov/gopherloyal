@@ -32,9 +32,9 @@ func NewBalanceHandler(store balance) *balanceHandler {
 func (u *balanceHandler) GetUserBalance(rw http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
-	userID, err := auth.GetUserID(r.Context(), r)
-	if err != nil {
-		log.Errorf("error getting user ID from token: %s", err)
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		log.Errorf("user not authenticated")
 		http.Error(rw, "User not authenticated", http.StatusUnauthorized)
 		return
 	}
@@ -58,9 +58,9 @@ func (u *balanceHandler) GetUserBalance(rw http.ResponseWriter, r *http.Request)
 func (u *balanceHandler) Withdrawals(rw http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
-	userID, err := auth.GetUserID(r.Context(), r)
-	if err != nil {
-		log.Errorf("error getting user ID from token: %s", err)
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		log.Errorf("user not authenticated")
 		http.Error(rw, "User not authenticated", http.StatusUnauthorized)
 		return
 	}
@@ -78,7 +78,7 @@ func (u *balanceHandler) Withdrawals(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = u.store.Withdraw(r.Context(), userID, req.Order, req.Sum)
+	err := u.store.Withdraw(r.Context(), userID, req.Order, req.Sum)
 	if err != nil {
 		switch {
 		case errors.Is(err, storageErrors.ErrInsufficientFunds):
@@ -97,9 +97,9 @@ func (u *balanceHandler) Withdrawals(rw http.ResponseWriter, r *http.Request) {
 func (u *balanceHandler) GetWithdrawals(rw http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
-	userID, err := auth.GetUserID(r.Context(), r)
-	if err != nil {
-		log.Errorf("error getting user ID from token: %s", err)
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		log.Errorf("user not authenticated")
 		http.Error(rw, "User not authenticated", http.StatusUnauthorized)
 		return
 	}

@@ -14,4 +14,6 @@ type Store interface {
 	GetUserBalance(ctx context.Context, userID int) (*models.UserBalance, error)
 	Withdraw(ctx context.Context, userID int, orderNumber string, sum float64) error
 	GetWithdrawals(ctx context.Context, userID int) ([]models.Withdrawals, error)
+	RetrieveNewOrders(ctx context.Context) ([]models.Orders, error)
+	UpdateOrderStatusAndAccrual(ctx context.Context, orderNumber string, status string, accrual float64) error
 }

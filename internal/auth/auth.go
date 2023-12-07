@@ -9,15 +9,18 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+type key int
+
+const (
+	userIDKey key = iota
+	TokenEXP      = time.Hour * 3
+	SecretKEY     = "supersecretkey"
+)
+
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID int
 }
-
-const (
-	TokenEXP  = time.Hour * 3
-	SecretKEY = "supersecretkey"
-)
 
 func WriteToken(ctx context.Context, rw http.ResponseWriter, userID int) error {
 	log := logger.FromContext(ctx)
@@ -30,7 +33,7 @@ func WriteToken(ctx context.Context, rw http.ResponseWriter, userID int) error {
 
 	tokenString, err := token.SignedString([]byte(SecretKEY))
 	if err != nil {
-		log.Errorf("error tokenString in BuildJWTString()... ", err)
+		log.Errorf("error generating token string: %v", err)
 		return err
 	}
 	http.SetCookie(rw, &http.Cookie{
@@ -42,23 +45,35 @@ func WriteToken(ctx context.Context, rw http.ResponseWriter, userID int) error {
 	return nil
 }
 
-func GetUserID(ctx context.Context, r *http.Request) (int, error) {
-	log := logger.FromContext(ctx)
-	claims := &Claims{}
-	cookie, err := r.Cookie("Token")
-	if err != nil {
-		log.Errorf("error in GetUserID, ", err)
-		return 0, err
-	}
+func UserIDFromContext(ctx context.Context) (int, bool) {
+	userID, ok := ctx.Value(userIDKey).(int)
+	return userID, ok
+}
 
-	token, err := jwt.ParseWithClaims(cookie.Value, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(SecretKEY), nil
+func Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		log := logger.FromContext(ctx)
+
+		claims := &Claims{}
+		cookie, err := r.Cookie("Token")
+		if err != nil {
+			log.Errorf("error getting cookie: %v", err)
+			http.Error(rw, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.ParseWithClaims(cookie.Value, claims, func(t *jwt.Token) (interface{}, error) {
+			return []byte(SecretKEY), nil
+		})
+
+		if err != nil || !token.Valid {
+			log.Errorf("invalid or expired token: %v", err)
+			http.Error(rw, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx = context.WithValue(ctx, userIDKey, claims.UserID)
+		next.ServeHTTP(rw, r.WithContext(ctx))
 	})
-
-	if !token.Valid {
-		log.Errorf("no valid token ...", err)
-		return 0, err
-	}
-
-	return claims.UserID, err
 }

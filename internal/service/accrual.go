@@ -10,13 +10,21 @@ import (
 	"github.com/11Petrov/gopherloyal/internal/config"
 	"github.com/11Petrov/gopherloyal/internal/logger"
 	"github.com/11Petrov/gopherloyal/internal/models"
-	"github.com/11Petrov/gopherloyal/internal/storage/postgre"
 )
 
-func ProcessOrderUpdates(ctx context.Context, cfg *config.Config, store *postgre.Database) {
+const (
+	tickerDuration = time.Second * 2
+)
+
+type AccrualStorage interface {
+	RetrieveNewOrders(ctx context.Context) ([]models.Orders, error)
+	UpdateOrderStatusAndAccrual(ctx context.Context, orderNumber string, status string, accrual float64) error
+}
+
+func ProcessOrderUpdates(ctx context.Context, cfg *config.Config, store AccrualStorage) {
 	log := logger.FromContext(ctx)
 
-	ticker := time.NewTicker(time.Second * 2)
+	ticker := time.NewTicker(tickerDuration)
 	defer ticker.Stop()
 
 	for {

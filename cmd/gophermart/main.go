@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/11Petrov/gopherloyal/internal/auth"
 	"github.com/11Petrov/gopherloyal/internal/config"
 	"github.com/11Petrov/gopherloyal/internal/handlers"
 	"github.com/11Petrov/gopherloyal/internal/logger"
@@ -40,11 +41,15 @@ func Run(cfg *config.Config, ctx context.Context) error {
 
 	r.Post("/api/user/register", userHandler.UserRegister)
 	r.Post("/api/user/login", userHandler.UserLogin)
-	r.Post("/api/user/orders", ordersHandler.UploadOrder)
-	r.Get("/api/user/orders", ordersHandler.GetUserOrders)
-	r.Get("/api/user/balance", balanceHandler.GetUserBalance)
-	r.Post("/api/user/balance/withdraw", balanceHandler.Withdrawals)
-	r.Get("/api/user/withdrawals", balanceHandler.GetWithdrawals)
+
+	r.Group(func(r chi.Router) {
+		r.Use(auth.Middleware)
+		r.Post("/api/user/orders", ordersHandler.UploadOrder)
+		r.Get("/api/user/orders", ordersHandler.GetUserOrders)
+		r.Get("/api/user/balance", balanceHandler.GetUserBalance)
+		r.Post("/api/user/balance/withdraw", balanceHandler.Withdrawals)
+		r.Get("/api/user/withdrawals", balanceHandler.GetWithdrawals)
+	})
 
 	log.Infof(
 		"Running server",

@@ -33,9 +33,9 @@ func NewOrdersHandler(store orders) *ordersHandler {
 func (o *ordersHandler) UploadOrder(rw http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
-	userID, err := auth.GetUserID(r.Context(), r)
-	if err != nil {
-		log.Errorf("error getting user ID from token: %s", err)
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		log.Errorf("user not authenticated")
 		http.Error(rw, "User not authenticated", http.StatusUnauthorized)
 		return
 	}
@@ -84,9 +84,9 @@ func (o *ordersHandler) UploadOrder(rw http.ResponseWriter, r *http.Request) {
 func (o *ordersHandler) GetUserOrders(rw http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(r.Context())
 
-	userID, err := auth.GetUserID(r.Context(), r)
-	if err != nil {
-		log.Errorf("error getting user ID from token: %s", err)
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		log.Errorf("user not authenticated")
 		http.Error(rw, "User not authenticated", http.StatusUnauthorized)
 		return
 	}
